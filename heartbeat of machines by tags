@@ -1,0 +1,34 @@
+//Create consumption type logic app and enable log analytics
+
+//create a Service Principal and save the client creds
+
+//grant SP access to the Subscription
+
+//go to your workspace and select agents management from settings, get the workspace ID primary key
+
+//go to your logic app and select logic app designer 
+
+//select recurrence and set interval to 1 and frequency to hour
+
+//add a new step to the flow and select "list resource by subscription"  as an action
+
+//sign in to your subscription with your SPN
+
+//add another step and select "log analytics data collector" as an action
+
+//choose a connection name and enter in your workspace ID and workspace Primary Key
+
+//create that connection
+
+//in JSON request body field.. a window will open and click on see more select value
+
+//run your logic app.
+
+//a new table named "Resource CL" should now be available in your space.  Run the below query
+
+Resources_CL
+| where tags_Department__s == "your tag value"  //Department represents my tag key so for you it will say something else for example tags_sumtag_s
+| summarize heartbeatPerHour = count() by bin_at(TimeGenerated, 1h, ago(24h)), Computer, tags_Department__s
+| extend availablePerHour = iff(heartbeatPerHour > 0, true, false) 
+| summarize totalAvailableHours = countif(availablePerHour == true) by Computer, tags_Department__s
+| extend availabilityRate = totalAvailableHours*100.0/24
