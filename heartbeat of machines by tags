@@ -26,9 +26,9 @@
 
 //a new table named "Resource CL" should now be available in your space.  Run the below query
 
-Resources_CL
-| where tags_Department__s == "your tag value"  //Department represents my tag key so for you it will say something else for example tags_sumtag_s
-| summarize heartbeatPerHour = count() by bin_at(TimeGenerated, 1h, ago(24h)), Computer, tags_Department__s
+Heartbeat | union Resources_CL
+| where tags_Department__s == "radio"
+| summarize heartbeatPerHour = count() by bin_at(TimeGenerated, 1h, ago(24h)), Computer 
 | extend availablePerHour = iff(heartbeatPerHour > 0, true, false) 
-| summarize totalAvailableHours = countif(availablePerHour == true) by Computer, tags_Department__s
+| summarize totalAvailableHours = countif(availablePerHour == true) by Computer 
 | extend availabilityRate = totalAvailableHours*100.0/24
