@@ -1,8 +1,7 @@
 # Kusto
 - This custom query is intended to be used in an Azure workbook
 - To customize the appearance or formatting of values select Column Settings in your workbook.
-- here you should be able to select colors, values, and to hide columns ,each time you add another codeblock like the following 
- ```| join (
+- here you should be able to select colors, values, and to hide columns ,each time you add another codeblock like the following ```| join (
     InsightsMetrics
     | where Name == "TransferPerSecond"
     | project-rename TransferPerSecond = Val
