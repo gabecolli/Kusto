@@ -1,0 +1,44 @@
+let timeRangeStart = now(-3d);
+let timeRangeEnd = now();
+InsightsMetrics
+| where TimeGenerated >= timeRangeStart and TimeGenerated <= timeRangeEnd
+| summarize heartbeat_per_hour=count() by bin_at(TimeGenerated, 1h, timeRangeStart), Computer
+| extend available_per_hour=iff(heartbeat_per_hour>0, true, false)
+| summarize total_available_hours=countif(available_per_hour==true) by Computer
+| extend total_number_of_buckets=round((timeRangeEnd-timeRangeStart)/1h)
+| extend availability_rate=total_available_hours*100/total_number_of_buckets
+| join (
+    InsightsMetrics
+    | where Name == "UtilizationPercentage"
+    | project-rename CPU_Util = Val
+    | project-away TenantId, TimeGenerated, SourceSystem, Origin, Namespace, Tags, AgentId, _ResourceId, Type
+    | summarize take_any(*)
+) on Computer
+| join (
+    InsightsMetrics
+    | where Name == "AvailableMB"
+    | project-rename Free_MemoryMB = Val
+    | project-away TenantId, TimeGenerated, SourceSystem, Origin, Namespace, Tags, AgentId, _ResourceId, Type
+    | summarize take_any(*)
+) on Computer
+| join (
+    InsightsMetrics
+    | where Name == "ReadBytesPerSecond"
+    | project-rename Network_ReadBytesPerSecond = Val
+    | project-away TenantId, TimeGenerated, SourceSystem, Origin, Namespace, Tags, AgentId, _ResourceId, Type
+    | summarize take_any(*)
+) on Computer
+| join (
+    InsightsMetrics
+    | where Name == "FreeSpacePercentage"
+    | project-rename FreeSpace = Val
+    | project-away TenantId, TimeGenerated, SourceSystem, Origin, Namespace, Tags, AgentId, _ResourceId, Type
+    | summarize take_any(*)
+) on Computer
+| join (
+    InsightsMetrics
+    | where Name == "TransfersPerSecond"
+    | project-rename TransferPerSecond = Val
+    | project-away TenantId, TimeGenerated, SourceSystem, Origin, Namespace, Tags, AgentId, _ResourceId, Type
+    | summarize take_any(*)
+) on Computer
